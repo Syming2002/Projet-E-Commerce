@@ -1,4 +1,5 @@
 <script>
+import { onMounted, ref } from 'vue';
 import Cart from './components/Cart.vue';
 import ProductCard from './components/ProductCard.vue';
 
@@ -8,17 +9,34 @@ export default {
     ProductCard,
     Cart
   },
+  setup() {
+    const carts = ref([]);
+
+    onMounted(() => {
+      const storedCart = localStorage.getItem("cartProducts");
+      if (storedCart) {
+        carts.value = JSON.parse(storedCart);
+      }
+    });
+    return {carts}
+  },
   data() {
     return {
       products: [],
       search: "",
       cartProducts: [],
-      quantity: 0,
       sortProduct: ""
     };
   },
   created() {
     this.fetchProducts();
+  },
+  mounted() {
+    const storedCart = localStorage.getItem("cartProducts");
+
+    if(storedCart) {
+      this.cartProducts = JSON.parse(storedCart);
+    }
   },
   methods: {
     fetchProducts() {
@@ -31,19 +49,18 @@ export default {
         console.error("Error fetching products: ", error);
       });
     },
-    getCategory(product) {
-      if (this.products.find(p => p.category === product.category)) { 
-        return product.category;
-      }
-    },
     addProductToCart(product) {
-      if (!this.cartProducts.some(p => p !== product)) {
-        if (this.quantity < 1 ) {
-          this.cartProducts.push(product);
-          localStorage.setItem("cartProducts", JSON.stringify(product));
-        }
-        this.quantity++;
+      const existingProduct = this.cartProducts.find(
+        p => p.id === product.id
+      );
+
+      if (existingProduct) {
+        existingProduct.quantity++;
+      } else {
+         this.cartProducts.push(({...product, quantity: 1}));
       }
+      localStorage.setItem("cartProducts", JSON.stringify(this.cartProducts));
+
       const wrapperDiv = document.getElementById("wrapper-div");
       const snackBar = document.createElement("div");
 
@@ -57,12 +74,17 @@ export default {
       }, 3000);
     },
     removeFromCart(product) {
-      if (this.quantity >= 1) {
-        this.quantity--;
+      const index = this.cartProducts.findIndex(cart => cart.id === product.id);
+
+      if (index >= 0) {
+        if (this.cartProducts[index].quantity > 1) {
+        this.cartProducts[index].quantity--;
+      } else {
+        this.cartProducts.splice(index, 1);
       }
-      if (this.quantity === 0) {
-          this.cartProducts.splice(product, 1);
-      }
+    }
+
+      localStorage.setItem("cartProducts", JSON.stringify(this.cartProducts));
 
       const wrapperDiv = document.getElementById("wrapper-div");
       const snackBar = document.createElement("div");
@@ -76,34 +98,31 @@ export default {
         snackBar.remove();
       }, 3000);
     },
-    deleteAllProduct(product) {
-      this.cartProducts.splice(product, this.quantity);
-      this.quantity -= this.quantity;
+    deleteAllProduct() {
+      this.cartProducts.forEach(c => {
+        this.cartProducts.splice(c, c.quantity);
+        c.quantity -= c.quantity;
 
-      const wrapperDiv = document.getElementById("wrapper-div");
-      const snackBar = document.createElement("div");
+        localStorage.setItem("cartProducts", JSON.stringify(this.cartProducts));
 
-      snackBar.textContent = `You removed all your product from the cart`;
-      snackBar.classList.add("snack-bar-remove");
+        const wrapperDiv = document.getElementById("wrapper-div");
+        const snackBar = document.createElement("div");
 
-      wrapperDiv.appendChild(snackBar);
+        snackBar.textContent = `You removed all your product from the cart`;
+        snackBar.classList.add("snack-bar-remove");
 
-      setTimeout(() => {
-        snackBar.remove();
-      }, 3000);
+        wrapperDiv.appendChild(snackBar);
+
+        setTimeout(() => {
+          snackBar.remove();
+        }, 3000);
+      })
     },
     isEmpty() {
       this.cartProducts === 0;
     },
-    total(product) {
-      return this.quantity * product.price; 
-    },
-    getCartProductsLocalStorage() {
-      const storedData = localStorage.getItem("cartProducts");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        console.log(parsedData);
-      }
+    total() {
+      return this.cartProducts.reduce((acc, cart) => acc + cart.quantity * cart.price, 0); 
     }
   },
   computed: {
@@ -115,9 +134,6 @@ export default {
       }
       return this.products.filter(p => p.title.toLowerCase().includes(this.search.toLowerCase()));
     }
-  }, 
-  watch: {
-
   }
 }
 
@@ -152,9 +168,9 @@ export default {
         <p v-if="isInCart">This article is already in your cart</p>
       </div>
       <div v-if="!isEmpty()" class="cart-div">
-        <Cart v-model="cartProducts" @remove-from-cart="removeFromCart(cartProduct)" v-for="cartProduct in cartProducts" :key="cartProduct.id" :id="cartProduct.id" :title="cartProduct.title" :price="cartProduct.price" :image="cartProduct.image" :quantity="quantity"/>
-        <p v-for="cartProduct in cartProducts" :key="cartProduct.id">Total price in €: {{ total(cartProduct) }} €</p>
-        <button v-for="cartProduct in cartProducts" @click="deleteAllProduct(cartProduct)">Delete all cart</button>
+        <Cart v-model="cartProducts" @remove-from-cart="removeFromCart(cartProduct)" v-for="cartProduct in cartProducts" :key="cartProduct.id" :id="cartProduct.id" :title="cartProduct.title" :price="cartProduct.price" :image="cartProduct.image" :quantity="cartProduct.quantity"/>
+        <p>Total price in €: {{ total() }} €</p>
+        <button @click="deleteAllProduct()">Delete all cart</button>
       </div>
     </div>
   </div>

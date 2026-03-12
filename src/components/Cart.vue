@@ -13,7 +13,8 @@
                 title: this.title,
                 description: this.description,
                 image: this.image,
-                price: this.price
+                price: this.price,
+                quantity: this.quantity
             }
         },
         methods: {
@@ -29,10 +30,10 @@
 
 <template>
     <div class="cart">
-        <h2 class="product-title">{{ title }}</h2>
-        <p>{{ price }} €</p>
+        <h2 class="product-title">{{ this.title }}</h2>
+        <p>{{ this.price }} €</p>
         <img class="product-image" :src="this.image" :alt="this.title">
-        <p>{{ quantity }}</p>
+        <p>{{ this.quantity }}</p>
         <button @click="removeFromCart()">Supprimer</button>
     </div>
 </template>
