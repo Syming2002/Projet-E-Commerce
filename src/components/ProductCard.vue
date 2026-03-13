@@ -35,7 +35,7 @@
         <p>{{ price }} €</p>
         <img class="product-image" :src="this.image" :alt="this.title">
         <p class="product-rate">{{ rating }}</p>
-        <button class="btn-add-to-cart" @click="addToCart()">Add to Cart</button>
+        <button id="btn-add" class="btn-add-to-cart" @click="addToCart()">Add to Cart</button>
     </div>
 </template>
 
