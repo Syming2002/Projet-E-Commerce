@@ -167,7 +167,15 @@ export default {
     </header>
     <div class="main">
       <div class="article-div">
-        <ProductCard @add-to-cart="addProductToCart(product)" v-for="product in filteredProducts" :key="product.id" :id="product.id" :title="product.title" :price="product.price" :description="product.description" :category="product.category" :image="product.image" :rating="product.rating.rate"/>
+        <ProductCard @add-to-cart="addProductToCart(product)" v-for="product in filteredProducts" 
+          :key="product.id" 
+          :id="product.id" 
+          :title="product.title" 
+          :price="product.price" 
+          :description="product.description" 
+          :category="product.category" 
+          :image="product.image" 
+          :rating="product.rating.rate"/>
         <p v-if="isInCart">This article is already in your cart</p>
       </div>
       <div v-if="!isEmpty()" class="cart-div">

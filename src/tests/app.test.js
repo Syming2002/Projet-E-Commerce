@@ -1,13 +1,25 @@
 import {mount} from "@vue/test-utils"
-import {test, expect, beforeEach} from "vitest"
-import Cart from "@/components/Cart.vue"
-import ProductCard from "@/components/ProductCard.vue"
+import {test, expect} from "vitest"
 import App from "@/App.vue"
 
 test("removeFromCart decrease the counter of object inside the cart", () => {
-    const cart = {quantity: 0}
+    const wrapper = mount(App);
+    const fakeDiv = document.createElement("div");
+    fakeDiv.id = "wrapper-div";
+    document.body.appendChild(fakeDiv);
 
-    const updated = App.methods.removeFromCart(cart);
+    wrapper.vm.cartProducts = [{
+        id: 1,
+        title: "Test Product",
+        quantity: 2,
+        price: 100
+    }]
 
-    expect(updated.quantity).toBe(0);
+    const product = wrapper.vm.cartProducts[0];
+
+    wrapper.vm.removeFromCart(product);
+
+    expect(wrapper.vm.cartProducts[0].quantity).toBe(1);
+
+    fakeDiv.remove();
 })
