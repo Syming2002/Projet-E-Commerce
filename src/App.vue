@@ -127,10 +127,13 @@ export default {
   },
   computed: {
     filteredProducts() {
+      const mensClothingReg = /^men's clothing$/;
+
       if (this.sortProduct !== "all") {
-        return this.products.filter(p => p.category.includes(this.sortProduct));
-      } else if (this.sortProduct === "men's clothing") {
-        return this.products.filter("men's clothing".includes(this.sortProduct))
+        if (mensClothingReg.test(this.sortProduct)) {
+          return this.products.filter(p => p.category.match(mensClothingReg))
+        }
+        return this.products.filter(p => p.category.toLowerCase().includes(this.sortProduct));
       }
       return this.products.filter(p => p.title.toLowerCase().includes(this.search.toLowerCase()));
     }
@@ -144,7 +147,7 @@ export default {
     <header class="header">
       <h1 class="main-title">Site E-commerce Made in Simon</h1>
       <input type="text" id="product-input" v-model="search" placeholder="Search a product">
-      <select id="filter-category" v-model="sortProduct" @change="filteredProducts">
+      <select id="filter-category" v-model="sortProduct">
         <option value="all">
           all
         </option>
@@ -234,7 +237,7 @@ export default {
     padding: 16px;
     position: fixed;
     z-index: 1;
-    left: 50%;
+    right: 50px;
     bottom: 50px;
   }
 
@@ -248,7 +251,7 @@ export default {
     padding: 16px;
     position: fixed;
     z-index: 1;
-    left: 50%;
+    right: 50px;
     bottom: 50px;
   }
 </style>
